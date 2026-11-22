@@ -1,0 +1,148 @@
+task_name: train
+tags:
+- aspect
+- categ
+- mind
+- title
+train: true
+test: false
+compile: false
+ckpt_path: null
+seed: 42
+data:
+  _target_: manner.data.mind_news_datamodule.MINDNewsDataModule
+  size: small
+  mind_urls:
+    large:
+      train: https://mind201910small.blob.core.windows.net/release/MINDlarge_train.zip
+      dev: https://mind201910small.blob.core.windows.net/release/MINDlarge_dev.zip
+    small:
+      train: https://mind201910small.blob.core.windows.net/release/MINDsmall_train.zip
+      dev: https://mind201910small.blob.core.windows.net/release/MINDsmall_dev.zip
+    demo:
+      train: https://recodatasets.z20.web.core.windows.net/newsrec/MINDdemo_train.zip"
+      dev: https://recodatasets.z20.web.core.windows.net/newsrec/MINDdemo_dev.zip
+  categ_embeddings_url: https://nlp.stanford.edu/data/glove.840B.300d.zip
+  data_dir: /content/drive/MyDrive/CP8339_Assignment2_MANNeR/data/
+  categ_embeddings_dirname: glove
+  categ_embeddings_fpath: /content/drive/MyDrive/CP8339_Assignment2_MANNeR/data//glove/glove.840B.300d.txt
+  id2index_filenames:
+    uid2index: uid2index.tsv
+    categ2index: categ2index.tsv
+    sentiment2index: sentiment2index.tsv
+    entity2index: entity2index.tsv
+  aspect: category
+  text_aspects:
+  - title
+  entity_aspects:
+  - title_entities
+  - abstract_entities
+  categ_embedding_dim: 300
+  entity_embedding_dim: 100
+  entity_freq_threshold: 2
+  entity_confidence_threshold: 0.5
+  sentiment_model: cardiffnlp/twitter-xlm-roberta-base-sentiment
+  tokenizer_max_length: 96
+  tokenizer_name: roberta-base
+  tokenizer_use_fast: true
+  samples_per_class: 2
+  batch_size: 8
+  num_workers: 0
+  pin_memory: true
+  drop_last: false
+model:
+  _target_: manner.models.a_module.AModule
+  temperature: 0.9
+  labels_path: /content/drive/MyDrive/CP8339_Assignment2_MANNeR/data/MINDsmall_train/categ2index.tsv
+  plm_model: roberta-base
+  frozen_layers:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  dropout_probability: 0.2
+  use_entities: false
+  pretrained_entity_embeddings_path: ''
+  entity_embedding_dim: 100
+  num_attention_heads: 10
+  query_vector_dim: 200
+  text_embedding_dim: 768
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 1.0e-05
+callbacks:
+  model_checkpoint:
+    _target_: lightning.pytorch.callbacks.ModelCheckpoint
+    dirpath: /content/drive/MyDrive/CP8339_Assignment2_MANNeR/checkpoints/category_smoke
+    filename: epoch_{epoch:03d}
+    monitor: val/loss
+    verbose: true
+    save_last: true
+    save_top_k: 1
+    mode: min
+    auto_insert_metric_name: false
+    save_weights_only: false
+    every_n_train_steps: null
+    train_time_interval: null
+    every_n_epochs: null
+    save_on_train_epoch_end: null
+  early_stopping:
+    _target_: lightning.pytorch.callbacks.EarlyStopping
+    monitor: val/loss
+    min_delta: 0.001
+    patience: 10
+    verbose: false
+    mode: min
+    strict: true
+    check_finite: true
+    stopping_threshold: null
+    divergence_threshold: null
+    check_on_train_epoch_end: null
+  model_summary:
+    _target_: lightning.pytorch.callbacks.RichModelSummary
+    max_depth: -1
+  rich_progress_bar:
+    _target_: lightning.pytorch.callbacks.RichProgressBar
+logger:
+  csv:
+    _target_: lightning.pytorch.loggers.csv_logs.CSVLogger
+    save_dir: null
+    name: csv/
+    prefix: ''
+  wandb:
+    name: a_module_categ_mind_title_s42
+    tags:
+    - aspect
+    - categ
+    - mind
+    - title
+    group: mind
+trainer:
+  _target_: lightning.pytorch.trainer.Trainer
+  default_root_dir: null
+  min_epochs: 1
+  max_epochs: 1
+  accelerator: gpu
+  devices: 1
+  precision: 16-mixed
+  check_val_every_n_epoch: 1
+  deterministic: false
+  profiler: simple
+  limit_train_batches: 1
+  limit_val_batches: 1
+  num_sanity_val_steps: 0
+paths:
+  root_dir: /content/manner
+  data_dir: /content/drive/MyDrive/CP8339_Assignment2_MANNeR/data/
+  log_dir: /content/manner/logs/
+  output_dir: null
+  work_dir: /content/manner
+extras:
+  ignore_warnings: false
+  enforce_tags: true
+  print_config: true
