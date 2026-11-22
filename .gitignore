@@ -221,3 +221,35 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# MANNeR project data and generated artifacts
+
+# Datasets and preprocessing outputs
+data/
+*.zip
+*.vec
+*.npy
+
+# Model checkpoints and ML weights
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# Training runs, logs, and generated results
+runs/
+logs/
+results/
+
+# Large GloVe resources
+glove/
+glove*.txt
+
+# Experiment tracking
+wandb/
+
+# Local secrets and tokens
+*.token
+secrets/
